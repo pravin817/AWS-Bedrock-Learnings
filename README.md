@@ -33,7 +33,7 @@ flowchart TB
 ## Quick links
 - 📘 [Video-notes template](templates/video-notes-template.md) — the structure every video's README follows
 - 🖥️ [Interactive demos](docs/index.html) — flip-cards, animations, step-throughs per topic
-- ✅ Progress: **1 / 86** videos fully noted
+- ✅ Progress: **10 / 86** videos fully noted
 
 ---
 
@@ -45,31 +45,31 @@ Legend: ✅ done · 🔜 not yet covered
 | # | Video | Status |
 |---|---|---|
 | 1 | [Terminology](01-tutorials-overview/01-terminology/README.md) | ✅ |
-| 2 | [Overview](01-tutorials-overview/02-overview/README.md) | 🔜 |
+| 2 | [Overview](01-tutorials-overview/02-overview/README.md) | ✅ |
 
 ### 🔬 Hands-on Labs
 | # | Video | Status |
 |---|---|---|
-| 3 | [Chat with your document](02-hands-on-labs/01-chat-with-your-document/README.md) | 🔜 |
-| 4 | [Knowledge Bases](02-hands-on-labs/02-knowledge-bases/README.md) | 🔜 |
-| 5 | [Guardrails](02-hands-on-labs/03-guardrails/README.md) | 🔜 |
-| 6 | [Watermark detection](02-hands-on-labs/04-watermark-detection/README.md) | 🔜 |
-| 8 | [Travel Agent using Amazon Nova](02-hands-on-labs/05-travel-agent-nova/README.md) | 🔜 |
+| 3 | [Chat with your document](02-hands-on-labs/01-chat-with-your-document/README.md) | ✅ |
+| 4 | [Knowledge Bases](02-hands-on-labs/02-knowledge-bases/README.md) | ✅ |
+| 5 | [Guardrails](02-hands-on-labs/03-guardrails/README.md) | ✅ |
+| 6 | [Watermark detection](02-hands-on-labs/04-watermark-detection/README.md) | ✅ |
+| 8 | [Travel Agent using Amazon Nova](02-hands-on-labs/05-travel-agent-nova/README.md) | ✅ |
 | 12 | [Day trip advisor using Bedrock Flows](02-hands-on-labs/06-day-trip-advisor-bedrock-flows/README.md) | 🔜 |
 | 14 | [Batch Inference](02-hands-on-labs/07-batch-inference/README.md) | 🔜 |
 
 ### 🧠 Prompt Management
 | # | Video | Status |
 |---|---|---|
-| 7 | [Prompt Routers - Preview](03-prompt-management/01-prompt-routers-preview/README.md) | 🔜 |
+| 7 | [Prompt Routers - Preview](03-prompt-management/01-prompt-routers-preview/README.md) | ✅ |
 | 11 | [Prompt Management Demo](03-prompt-management/02-prompt-management-demo/README.md) | 🔜 |
 | 13 | [Prompt Caching](03-prompt-management/03-prompt-caching/README.md) | 🔜 |
 
 ### 🛒 Marketplace, Catalog & Deployments
 | # | Video | Status |
 |---|---|---|
-| 9 | [Model Catalog Demo](04-marketplace-catalog/01-model-catalog-demo/README.md) | 🔜 |
-| 10 | [Marketplace Deployments Demo](04-marketplace-catalog/02-marketplace-deployments-demo/README.md) | 🔜 |
+| 9 | [Model Catalog Demo](04-marketplace-catalog/01-model-catalog-demo/README.md) | ✅ |
+| 10 | [Marketplace Deployments Demo](04-marketplace-catalog/02-marketplace-deployments-demo/README.md) | ✅ |
 
 ### 📊 Evaluations
 | # | Video | Status |
