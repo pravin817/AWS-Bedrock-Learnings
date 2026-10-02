@@ -21,14 +21,28 @@
   .wrap{max-width:1000px; margin:0 auto;}
   a.back{color:var(--accent2); text-decoration:none; font-size:.85rem;}
   h1{font-size:1.7rem; margin:14px 0 4px;}
-  .sub{color:var(--muted); margin:0 0 28px; font-size:.95rem;}
+  .sub{color:var(--muted); margin:0 0 20px; font-size:.95rem;}
   h2{font-size:1.15rem; margin:36px 0 12px; display:flex; align-items:center; gap:8px;}
   .pill{font-size:.72rem; font-weight:700; background:rgba(34,211,238,.15); color:var(--accent2); padding:3px 10px; border-radius:999px;}
+
+  /* Mode toggle */
+  .mode-row{display:flex; align-items:center; gap:10px; margin-bottom:24px;}
+  .mode-label{font-size:.78rem; color:var(--muted);}
+  .mode-toggle{
+    display:inline-flex; background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:999px; padding:3px; gap:3px;
+  }
+  .mode-toggle button{
+    border:none; background:transparent; color:var(--muted); font-size:.82rem; font-weight:700;
+    padding:6px 16px; border-radius:999px; cursor:pointer; transition:all .2s;
+  }
+  .mode-toggle button.on{ background:var(--accent); color:#1a1200; }
 
   /* Flip cards */
   .theme-label{font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); font-weight:700; margin:28px 0 10px;}
   .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
-  .flip{ perspective:800px; height:120px; cursor:pointer; }
+  .flip{ perspective:800px; height:120px; cursor:pointer; transition:height .25s; }
+  body.mode-detailed .flip{ height:190px; }
   .flip-inner{ position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; }
   .flip.active .flip-inner{ transform:rotateY(180deg); }
   .face{
@@ -37,7 +51,10 @@
     backface-visibility:hidden; font-size:.88rem;
   }
   .front{background:var(--panel); font-weight:600;}
-  .back2{background:var(--card-back); transform:rotateY(180deg); font-size:.76rem; color:var(--muted); line-height:1.3;}
+  .back2{
+    background:var(--card-back); transform:rotateY(180deg); font-size:.76rem; color:var(--muted);
+    line-height:1.35; overflow-y:auto; display:block; padding:12px; text-align:left;
+  }
   .flip:hover .front{border-color:var(--accent);}
 
   /* RAG stepper */
@@ -67,6 +84,14 @@
   <h1>Amazon Bedrock Terminology <span class="pill">Video 1</span></h1>
   <p class="sub">Click any card to flip it and reveal the definition. Then step through how Retrieval-Augmented Generation actually flows.</p>
 
+  <div class="mode-row">
+    <span class="mode-label">Revision mode:</span>
+    <div class="mode-toggle" id="modeToggle">
+      <button data-mode="short" class="on">Short</button>
+      <button data-mode="detailed">Detailed</button>
+    </div>
+  </div>
+
   <div id="cardSections"></div>
 
   <h2>🔁 RAG pipeline — step through it</h2>
@@ -83,34 +108,73 @@
 </div>
 
 <script>
+// Each term: [name, short definition, detailed definition]
 const themes = [
   { name: "Model Basics", terms: [
-    ["AI Model", "A mathematical/computational structure trained to spot patterns in data and make predictions or decisions."],
-    ["Base Model", "An AI model trained on a generic dataset — the simple starting point."],
-    ["Foundation Model (FM)", "Large-parameter model trained on massive, diverse (often labeled) data; generates chat/text/image output."],
-    ["Custom Model", "The result of Model Customization — a base/foundation model tuned on your own training data."],
+    ["AI Model",
+      "Computational structure trained to spot patterns and make predictions.",
+      "A mathematical/computational structure trained on data to recognize patterns and make decisions or predictions. It's the broadest term — every model flavor below (base, foundation, custom) is a specific kind of AI model."],
+    ["Base Model",
+      "AI model trained on a generic dataset — the simple starting point.",
+      "An AI model built by a provider (or by you) and trained on a generic, relatively simple dataset. It isn't the end product — it acts as the foundation used to build more capable foundation models."],
+    ["Foundation Model (FM)",
+      "Large-parameter model trained on massive, diverse data; generates chat/text/image output.",
+      "A model with a large number of parameters, trained on massive amounts of diverse (often labeled) data, capable of generating chat, text, or image responses. People often use 'base model' and 'FM' interchangeably, but technically a base model is the simpler building block that feeds into an FM."],
+    ["Custom Model",
+      "The result of Model Customization — a base/foundation model tuned on your own training data.",
+      "The output of Model Customization: a base or foundation model whose parameters have been adjusted using your own training data and hyperparameters, so it performs better on your specific use case than the generic model would."],
   ]},
   { name: "Inference & Prompting", terms: [
-    ["Prompt", "The input given to a model so it generates a corresponding response."],
-    ["Token", "Smallest unit of text a model processes as one chunk; models often cap around 512 tokens/request."],
-    ["Model Inference", "The full process: model takes input, computes, and produces an output/response."],
-    ["Model Parameters", "Values that define the model itself and how it behaves."],
-    ["Inference Parameters", "Values tuned at request time to influence a single response."],
-    ["Playground", "AWS console GUI for experimenting with Bedrock models without writing code."],
+    ["Prompt",
+      "The input given to a model so it generates a corresponding response.",
+      "The input text (or other data) you provide to a model so it generates a corresponding response. How a prompt is structured directly shapes output quality — this is the subject of prompt engineering."],
+    ["Token",
+      "Smallest unit of text a model processes as one chunk; models often cap around 512 tokens/request.",
+      "A sequence of characters that a model treats as a single processing unit — similar to how a byte is a unit made of 8 bits. Every model publishes a token limit per request; 512 is a commonly seen figure, though larger-context models support far more."],
+    ["Model Inference",
+      "Model takes input, computes, and produces an output/response.",
+      "The full process of a foundation model generating an output or response from a given input/prompt — the model runs its internal computations on your input and reaches a 'conclusion' (hence 'inference'), which becomes the response you see."],
+    ["Model Parameters",
+      "Values that define the model itself and how it behaves.",
+      "The internal values that define a model and shape how it interprets input and generates output. They're essentially what the model 'is' — adjusting them via training changes the model's behavior permanently."],
+    ["Inference Parameters",
+      "Values tuned at request time to influence a single response.",
+      "Values you set per request — separate from the model's own parameters — that influence how a specific response is generated, without changing the underlying model (e.g. temperature, top-p, max tokens)."],
+    ["Playground",
+      "AWS console GUI for experimenting with Bedrock models without writing code.",
+      "The graphical interface inside the AWS Management Console for working with, learning, and experimenting with Amazon Bedrock's foundation models interactively, without writing any code."],
   ]},
   { name: "RAG & Orchestration", terms: [
-    ["Embedding", "Data converted into a numeric vector, so similarity/difference can be measured mathematically."],
-    ["Orchestration", "Coordinating a foundation model with your data/apps to complete a task."],
-    ["Agent", "The application that performs orchestration by interpreting input and producing output via an FM."],
-    ["RAG", "Retrieve relevant data → augment the prompt/response → generate the final output."],
+    ["Embedding",
+      "Data converted into a numeric vector, so similarity/difference can be measured mathematically.",
+      "The process of condensing a piece of information and transforming it into a vector — a set of numerical values. Because numbers are easy to compare, embeddings let you measure similarity or difference between objects (text, documents, etc.) mathematically. This is the mechanism behind semantic search and RAG retrieval."],
+    ["Orchestration",
+      "Coordinating a foundation model with your data/apps to complete a task.",
+      "The process of coordinating between a foundation model and your enterprise data and applications in order to carry out a task end-to-end — it's the 'glue' connecting the model to real business logic and data."],
+    ["Agent",
+      "The application that performs orchestration by interpreting input and producing output via an FM.",
+      "An application that carries out orchestration by interpreting inputs and producing outputs using a foundation model. You can build your own GUI on top, but that GUI ultimately calls an agent, which drives the FM and any underlying orchestration."],
+    ["RAG",
+      "Retrieve relevant data → augment the prompt/response → generate the final output.",
+      "Retrieval Augmented Generation: querying and retrieving information from a data source (usually via embedding similarity) in order to augment a generated response. Each word in the name carries meaning — retrieval of data, augmentation of the response with that data, and generation of the final output."],
   ]},
   { name: "Customization & Ops", terms: [
-    ["Model Customization", "Using training data to adjust model parameters and produce a custom model."],
-    ["Hyperparameters", "Values tuned during training/customization that shape the resulting custom model."],
-    ["Model Evaluation", "Comparing models to find the best fit for your specific use case."],
-    ["Provisioned Throughput", "Purchased capacity to raise the rate of tokens a model can process during inference."],
+    ["Model Customization",
+      "Using training data to adjust model parameters and produce a custom model.",
+      "The process of using your own training data to adjust a model's parameter values, producing a custom model tailored to your specific use case rather than relying on the generic base/foundation model."],
+    ["Hyperparameters",
+      "Values tuned during training/customization that shape the resulting custom model.",
+      "Values that can be adjusted specifically for model customization to control the training process itself, and consequently the behavior of the resulting custom model. Unlike inference parameters, these apply during training, not at request time."],
+    ["Model Evaluation",
+      "Comparing models to find the best fit for your specific use case.",
+      "The process of evaluating and comparing models — including testing how each responds to the same prompts — to determine which one is accurate and appropriate for your specific use case before committing to it in production."],
+    ["Provisioned Throughput",
+      "Purchased capacity to raise the rate of tokens a model can process during inference.",
+      "Purchased throughput for a model (base, foundation, or custom) that increases the rate at which it can process tokens during inference. It exists because default processing speed/volume may not meet the demands of a commercial application with many concurrent users."],
   ]},
 ];
+
+let mode = 'short'; // 'short' | 'detailed'
 
 const sectionsEl = document.getElementById('cardSections');
 themes.forEach(theme => {
@@ -121,13 +185,13 @@ themes.forEach(theme => {
 
   const grid = document.createElement('div');
   grid.className = 'cards';
-  theme.terms.forEach(([term, def]) => {
+  theme.terms.forEach(([term, shortDef, detailDef]) => {
     const flip = document.createElement('div');
     flip.className = 'flip';
     flip.innerHTML = `
       <div class="flip-inner">
         <div class="face front">${term}</div>
-        <div class="face back2">${def}</div>
+        <div class="face back2" data-short="${shortDef.replace(/"/g, '&quot;')}" data-detail="${detailDef.replace(/"/g, '&quot;')}">${shortDef}</div>
       </div>`;
     flip.addEventListener('click', () => flip.classList.toggle('active'));
     grid.appendChild(flip);
@@ -135,19 +199,49 @@ themes.forEach(theme => {
   sectionsEl.appendChild(grid);
 });
 
-// RAG stepper
+function applyMode(){
+  document.body.classList.toggle('mode-detailed', mode === 'detailed');
+  document.querySelectorAll('.back2').forEach(el => {
+    el.textContent = mode === 'detailed' ? el.dataset.detail : el.dataset.short;
+  });
+  document.querySelectorAll('#modeToggle button').forEach(b => {
+    b.classList.toggle('on', b.dataset.mode === mode);
+  });
+  renderStep();
+}
+document.getElementById('modeToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-mode]');
+  if (!btn) return;
+  mode = btn.dataset.mode;
+  applyMode();
+});
+
+// RAG stepper — each step has a short one-liner and a fuller detailed explanation
 const ragSteps = [
-  { label: "1. Prompt", detail: "The user asks a question. This is the raw <b>Prompt</b> — plain text, made of tokens." },
-  { label: "2. Embed", detail: "The query is converted into an <b>Embedding</b> — a numeric vector — so it can be compared against stored data." },
-  { label: "3. Retrieve", detail: "The system searches a knowledge source / vector store for the most similar embeddings — this is the <b>Retrieval</b> step." },
-  { label: "4. Augment", detail: "The retrieved content is merged into the prompt/context — the response is now <b>Augmented</b> with real data, not just the model's training knowledge." },
-  { label: "5. Generate", detail: "The foundation model runs <b>Model Inference</b> on the augmented prompt and <b>Generates</b> the final response." },
+  { label: "1. Prompt",
+    short: "User submits a question — the raw <b>Prompt</b>.",
+    detail: "The user asks a question in plain text. This raw input is the <b>Prompt</b>, and it's broken down internally into <b>Tokens</b> before any processing happens." },
+  { label: "2. Embed",
+    short: "Query converted into a numeric vector.",
+    detail: "The query is converted into an <b>Embedding</b> — a numeric vector — so it can be mathematically compared against vectors representing stored documents or knowledge." },
+  { label: "3. Retrieve",
+    short: "Search the knowledge source for similar vectors.",
+    detail: "The system searches a knowledge source / vector store for the embeddings most similar to the query's vector — this is the <b>Retrieval</b> step, and it's what grounds the response in real data instead of just the model's training knowledge." },
+  { label: "4. Augment",
+    short: "Merge retrieved content into the prompt.",
+    detail: "The retrieved content is merged into the prompt/context sent to the model. The response is now <b>Augmented</b> with real, retrieved data rather than relying solely on what the model learned during training." },
+  { label: "5. Generate",
+    short: "Model runs inference and generates the final response.",
+    detail: "The foundation model runs <b>Model Inference</b> on the augmented prompt and <b>Generates</b> the final response — completing the Retrieval-Augmented-Generation cycle." },
 ];
 const stepsEl = document.getElementById('steps');
 const detailEl = document.getElementById('stepDetail');
 let current = 0;
 let playing = null;
 
+function renderStep(){
+  detailEl.innerHTML = mode === 'detailed' ? ragSteps[current].detail : ragSteps[current].short;
+}
 function render(){
   stepsEl.innerHTML = '';
   ragSteps.forEach((s, i) => {
@@ -157,7 +251,7 @@ function render(){
     b.addEventListener('click', () => { stop(); current = i; render(); });
     stepsEl.appendChild(b);
   });
-  detailEl.innerHTML = ragSteps[current].detail;
+  renderStep();
 }
 function stop(){ if(playing){ clearInterval(playing); playing = null; document.getElementById('playBtn').textContent = '▶ Play'; } }
 document.getElementById('playBtn').addEventListener('click', () => {
@@ -170,6 +264,7 @@ document.getElementById('playBtn').addEventListener('click', () => {
 });
 document.getElementById('resetBtn').addEventListener('click', () => { stop(); current = 0; render(); });
 render();
+applyMode();
 </script>
 </body>
 </html>

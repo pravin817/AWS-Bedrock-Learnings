@@ -6,7 +6,7 @@ A structured, revision-ready notes repo built while following **[NamrataHShah's 
 >
 > 🏗️ **How it's built:** one video at a time, as each one is actually watched. Folders for every video already exist (see roadmap below) so the structure mirrors the full playlist from day one — they're filled in progressively, never backfilled with guesses.
 
-🔗 **Interactive demos hub (Vercel):** _add your deployed URL here after connecting the repo in Vercel_ · 📺 **[Original playlist](https://www.youtube.com/playlist?list=PLrDJzKfz9AUsuEdt8PeH4zzg7zmDgJH4s)**
+🔗 **[Interactive demos hub](https://aws-bedrock-learnings.vercel.app/)** (Vercel) · 📺 **[Original playlist](https://www.youtube.com/playlist?list=PLrDJzKfz9AUsuEdt8PeH4zzg7zmDgJH4s)**
 
 ---
 
