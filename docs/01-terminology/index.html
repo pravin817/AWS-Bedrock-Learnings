@@ -8,15 +8,19 @@
   :root{
     --bg:#0b0f17; --panel:#121826; --panel-border:#1f2937; --text:#e5e9f0; --muted:#94a3b8;
     --accent:#ff9900; --accent2:#22d3ee; --good:#34d399; --card-back:#1a2232;
+    --font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --card-h: 120px;
   }
-  @media (prefers-color-scheme: light){
-    :root{ --bg:#f7f8fb; --panel:#ffffff; --panel-border:#e2e8f0; --text:#0f172a; --muted:#51607a; --card-back:#eef2f8; }
+  :root[data-theme="light"]{
+    --bg:#f7f8fb; --panel:#ffffff; --panel-border:#e2e8f0; --text:#0f172a; --muted:#51607a; --card-back:#eef2f8;
   }
   *{box-sizing:border-box;}
+  html{ font-size:16px; }
   body{
     margin:0; min-height:100vh; background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:var(--font-family);
     padding:32px 16px 60px;
+    transition:background .2s, color .2s;
   }
   .wrap{max-width:1000px; margin:0 auto;}
   a.back{color:var(--accent2); text-decoration:none; font-size:.85rem;}
@@ -25,37 +29,67 @@
   h2{font-size:1.15rem; margin:36px 0 12px; display:flex; align-items:center; gap:8px;}
   .pill{font-size:.72rem; font-weight:700; background:rgba(34,211,238,.15); color:var(--accent2); padding:3px 10px; border-radius:999px;}
 
-  /* Mode toggle */
-  .mode-row{display:flex; align-items:center; gap:10px; margin-bottom:24px;}
+  /* Controls row (revision mode + settings) */
+  .controls-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;}
+  .mode-row{display:flex; align-items:center; gap:10px;}
   .mode-label{font-size:.78rem; color:var(--muted);}
-  .mode-toggle{
+  .mode-toggle, .theme-toggle{
     display:inline-flex; background:var(--panel); border:1px solid var(--panel-border);
     border-radius:999px; padding:3px; gap:3px;
   }
-  .mode-toggle button{
+  .mode-toggle button, .theme-toggle button{
     border:none; background:transparent; color:var(--muted); font-size:.82rem; font-weight:700;
     padding:6px 16px; border-radius:999px; cursor:pointer; transition:all .2s;
   }
-  .mode-toggle button.on{ background:var(--accent); color:#1a1200; }
+  .mode-toggle button.on, .theme-toggle button.on{ background:var(--accent); color:#1a1200; }
+
+  .settings-btn{
+    background:var(--panel); border:1px solid var(--panel-border); color:var(--muted);
+    font-size:.82rem; font-weight:600; padding:8px 14px; border-radius:999px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .settings-btn:hover{ border-color:var(--accent); color:var(--text); }
+  .settings-panel{
+    display:none; background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
+    padding:18px; margin-bottom:24px; gap:18px; flex-wrap:wrap;
+  }
+  .settings-panel.open{ display:flex; }
+  .setting{display:flex; flex-direction:column; gap:8px; min-width:150px;}
+  .setting label{font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700;}
+  .setting .row{display:inline-flex; gap:4px;}
+  .setting .row button{
+    border:1px solid var(--panel-border); background:transparent; color:var(--muted);
+    font-size:.8rem; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer;
+  }
+  .setting .row button.on{ background:var(--accent2); color:#021019; border-color:var(--accent2); }
+  .setting select{
+    border:1px solid var(--panel-border); background:var(--bg); color:var(--text);
+    font-size:.85rem; padding:7px 10px; border-radius:8px; font-family:inherit;
+  }
 
   /* Flip cards */
   .theme-label{font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); font-weight:700; margin:28px 0 10px;}
-  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
-  .flip{ perspective:800px; height:120px; cursor:pointer; transition:height .25s; }
-  body.mode-detailed .flip{ height:190px; }
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
+  .flip{ perspective:800px; height:var(--card-h); cursor:pointer; transition:height .25s; }
   .flip-inner{ position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; }
   .flip.active .flip-inner{ transform:rotateY(180deg); }
   .face{
     position:absolute; inset:0; border-radius:12px; border:1px solid var(--panel-border);
-    display:flex; align-items:center; justify-content:center; text-align:center; padding:10px;
-    backface-visibility:hidden; font-size:.88rem;
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:12px;
+    backface-visibility:hidden; font-size:.88rem; overflow:hidden;
   }
   .front{background:var(--panel); font-weight:600;}
   .back2{
     background:var(--card-back); transform:rotateY(180deg); font-size:.76rem; color:var(--muted);
-    line-height:1.35; overflow-y:auto; display:block; padding:12px; text-align:left;
+    line-height:1.4; display:flex; align-items:center; padding:14px; text-align:left;
   }
   .flip:hover .front{border-color:var(--accent);}
+
+  /* offscreen probe used to measure wrapped text height (no visible scrollbar ever) */
+  #probe{
+    position:absolute; visibility:hidden; pointer-events:none; left:-9999px; top:0;
+    padding:14px; line-height:1.4; text-align:left; box-sizing:border-box;
+  }
 
   /* RAG stepper */
   .rag-box{background:var(--panel); border:1px solid var(--panel-border); border-radius:16px; padding:24px;}
@@ -84,11 +118,40 @@
   <h1>Amazon Bedrock Terminology <span class="pill">Video 1</span></h1>
   <p class="sub">Click any card to flip it and reveal the definition. Then step through how Retrieval-Augmented Generation actually flows.</p>
 
-  <div class="mode-row">
-    <span class="mode-label">Revision mode:</span>
-    <div class="mode-toggle" id="modeToggle">
-      <button data-mode="short" class="on">Short</button>
-      <button data-mode="detailed">Detailed</button>
+  <div class="controls-row">
+    <div class="mode-row">
+      <span class="mode-label">Revision mode:</span>
+      <div class="mode-toggle" id="modeToggle">
+        <button data-mode="short" class="on">Short</button>
+        <button data-mode="detailed">Detailed</button>
+      </div>
+    </div>
+    <button class="settings-btn" id="settingsBtn">⚙ Display settings</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="setting">
+      <label>Font size</label>
+      <div class="row" id="fontSizeRow">
+        <button data-size="14">Small</button>
+        <button data-size="16" class="on">Medium</button>
+        <button data-size="18">Large</button>
+      </div>
+    </div>
+    <div class="setting">
+      <label>Font family</label>
+      <select id="fontFamilySelect">
+        <option value="system">System default</option>
+        <option value="serif">Serif</option>
+        <option value="mono">Monospace</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label>Theme</label>
+      <div class="row theme-toggle" id="themeToggle">
+        <button data-theme="dark">Dark</button>
+        <button data-theme="light">Light</button>
+      </div>
     </div>
   </div>
 
@@ -107,7 +170,15 @@
   <footer>Part of <a href="https://github.com/pravin817/AWS-Bedrock-Learnings" style="color:var(--accent2)">AWS Bedrock Learnings</a> — notes: <a href="../../01-tutorials-overview/01-terminology/README.md" style="color:var(--accent2)">Video 1 README</a></footer>
 </div>
 
+<div id="probe"></div>
+
 <script>
+const FONT_STACKS = {
+  system: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+  serif: 'Georgia,"Times New Roman",Times,serif',
+  mono: '"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace',
+};
+
 // Each term: [name, short definition, detailed definition]
 const themes = [
   { name: "Model Basics", terms: [
@@ -175,6 +246,16 @@ const themes = [
 ];
 
 let mode = 'short'; // 'short' | 'detailed'
+let settings = { fontSize: 16, fontFamily: 'system', theme: 'dark' };
+
+try {
+  const saved = JSON.parse(localStorage.getItem('bedrockDemoSettings') || 'null');
+  if (saved) settings = Object.assign(settings, saved);
+} catch (e) { /* ignore — private browsing / blocked storage */ }
+
+function saveSettings(){
+  try { localStorage.setItem('bedrockDemoSettings', JSON.stringify(settings)); } catch (e) { /* ignore */ }
+}
 
 const sectionsEl = document.getElementById('cardSections');
 themes.forEach(theme => {
@@ -199,8 +280,26 @@ themes.forEach(theme => {
   sectionsEl.appendChild(grid);
 });
 
+// Measure the tallest card content with an offscreen probe so cards always fit
+// their text with no internal scrollbar, at the current font-size/family/mode.
+function recalcCardHeight(){
+  const probe = document.getElementById('probe');
+  const sampleCard = document.querySelector('.flip');
+  if (!sampleCard) return;
+  const width = sampleCard.getBoundingClientRect().width;
+  probe.style.width = width + 'px';
+  probe.style.fontFamily = 'var(--font-family)';
+  probe.style.fontSize = '.76rem';
+
+  let maxHeight = 90;
+  document.querySelectorAll('.back2').forEach(el => {
+    probe.textContent = mode === 'detailed' ? el.dataset.detail : el.dataset.short;
+    maxHeight = Math.max(maxHeight, probe.scrollHeight);
+  });
+  document.documentElement.style.setProperty('--card-h', maxHeight + 'px');
+}
+
 function applyMode(){
-  document.body.classList.toggle('mode-detailed', mode === 'detailed');
   document.querySelectorAll('.back2').forEach(el => {
     el.textContent = mode === 'detailed' ? el.dataset.detail : el.dataset.short;
   });
@@ -208,6 +307,7 @@ function applyMode(){
     b.classList.toggle('on', b.dataset.mode === mode);
   });
   renderStep();
+  recalcCardHeight();
 }
 document.getElementById('modeToggle').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-mode]');
@@ -215,6 +315,44 @@ document.getElementById('modeToggle').addEventListener('click', (e) => {
   mode = btn.dataset.mode;
   applyMode();
 });
+
+// Settings panel
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.toggle('open');
+});
+document.getElementById('fontSizeRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-size]');
+  if (!btn) return;
+  settings.fontSize = parseInt(btn.dataset.size, 10);
+  applySettings();
+});
+document.getElementById('fontFamilySelect').addEventListener('change', (e) => {
+  settings.fontFamily = e.target.value;
+  applySettings();
+});
+document.getElementById('themeToggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-theme]');
+  if (!btn) return;
+  settings.theme = btn.dataset.theme;
+  applySettings();
+});
+
+function applySettings(){
+  document.documentElement.style.fontSize = settings.fontSize + 'px';
+  document.documentElement.style.setProperty('--font-family', FONT_STACKS[settings.fontFamily] || FONT_STACKS.system);
+  document.documentElement.setAttribute('data-theme', settings.theme);
+
+  document.querySelectorAll('#fontSizeRow button').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.size, 10) === settings.fontSize);
+  });
+  document.getElementById('fontFamilySelect').value = settings.fontFamily;
+  document.querySelectorAll('#themeToggle button').forEach(b => {
+    b.classList.toggle('on', b.dataset.theme === settings.theme);
+  });
+
+  saveSettings();
+  recalcCardHeight();
+}
 
 // RAG stepper — each step has a short one-liner and a fuller detailed explanation
 const ragSteps = [
@@ -263,8 +401,11 @@ document.getElementById('playBtn').addEventListener('click', () => {
   }, 1600);
 });
 document.getElementById('resetBtn').addEventListener('click', () => { stop(); current = 0; render(); });
+
 render();
 applyMode();
+applySettings();
+window.addEventListener('resize', () => { clearTimeout(window.__rcT); window.__rcT = setTimeout(recalcCardHeight, 150); });
 </script>
 </body>
 </html>
